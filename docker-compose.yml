@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -22,7 +22,7 @@ services:
     image: redis:7-alpine
     container_name: bulk-notifs-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     networks:
@@ -94,7 +94,7 @@ services:
     image: hibiken/asynqmon:latest
     container_name: bulk-notifs-asynqmon
     ports:
-      - "8090:8080"
+      - "8095:8080"
     environment:
       REDIS_ADDR: redis:6379
     depends_on:

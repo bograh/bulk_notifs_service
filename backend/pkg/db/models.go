@@ -39,8 +39,7 @@ type User struct {
 	IsActive          bool           `gorm:"default:true" json:"is_active"`
 	EmailVerified     bool           `gorm:"default:false" json:"email_verified"`
 	PhoneNumber       string         `json:"phone_number"`
-	SubscriptionID    *uint          `json:"subscription_id"`
-	Subscription      *Subscription  `gorm:"foreignKey:SubscriptionID" json:"subscription,omitempty"`
+	Subscription      *Subscription  `gorm:"foreignKey:UserID" json:"subscription,omitempty"`
 	VerificationToken string         `json:"-"`
 	ResetToken        string         `json:"-"`
 	ResetTokenExpiry  time.Time      `json:"-"`

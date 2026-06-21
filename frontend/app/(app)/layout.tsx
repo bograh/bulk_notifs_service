@@ -3,12 +3,11 @@
 import { useAuth } from "@/hooks/use-auth"
 import { Navbar, Sidebar, MobileSidebar } from "@/components/layout/navbar"
 import { Toaster } from "@/components/ui/toaster"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
 import { Loader2 } from "lucide-react"
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
@@ -22,7 +21,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
       </div>
     )
   }
@@ -31,12 +33,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
       <Sidebar />
-      <MobileSidebar open={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)} />
-      <main className="md:pl-64 pt-14">
-        <div className="p-6">{children}</div>
-      </main>
+      <div className="md:pl-60">
+        <Navbar onMenuClick={() => setMobileSidebarOpen(true)} />
+        <MobileSidebar open={mobileSidebarOpen} onClose={() => setMobileSidebarOpen(false)} />
+        <main className="p-6 max-w-screen-xl mx-auto animate-fade-in">
+          {children}
+        </main>
+      </div>
       <Toaster />
     </div>
   )

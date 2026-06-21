@@ -43,6 +43,8 @@ export const authAPI = {
   login: (data: LoginData) => api.post('/auth/login', data),
   logout: () => api.post('/auth/logout'),
   getProfile: () => api.get('/auth/profile'),
+  updateProfile: (data: UpdateProfileData) => api.put('/auth/profile', data),
+  changePassword: (data: ChangePasswordData) => api.post('/auth/change-password', data),
   refresh: () => api.post('/auth/refresh'),
 };
 
@@ -100,6 +102,16 @@ export const billingAPI = {
   getTransactions: () => api.get('/billing/transactions'),
 };
 
+export const adminAPI = {
+  getStats: () => api.get('/admin/stats'),
+  getUsers: (page = 1, search?: string) => api.get('/admin/users', { params: { page, search } }),
+  getUser: (id: number) => api.get(`/admin/users/${id}`),
+  updateUser: (id: number, data: Partial<User>) => api.put(`/admin/users/${id}`, data),
+  deleteUser: (id: number) => api.delete(`/admin/users/${id}`),
+  updateSubscription: (userId: number, data: { plan_name: string }) =>
+    api.put(`/admin/users/${userId}/subscription`, data),
+};
+
 export interface RegisterData {
   email: string;
   password: string;
@@ -107,6 +119,27 @@ export interface RegisterData {
   last_name: string;
   company?: string;
   phone_number?: string;
+}
+
+export interface UpdateProfileData {
+  first_name?: string;
+  last_name?: string;
+  company?: string;
+  phone_number?: string;
+}
+
+export interface ChangePasswordData {
+  current_password: string;
+  new_password: string;
+}
+
+export interface AdminStats {
+  total_users: number;
+  active_users: number;
+  total_campaigns: number;
+  total_messages: number;
+  total_contacts: number;
+  revenue: number;
 }
 
 export interface LoginData {

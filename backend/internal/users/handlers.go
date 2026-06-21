@@ -109,10 +109,6 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Update user with subscription ID
-	user.SubscriptionID = &subscription.ID
-	h.db.Save(&user)
-
 	// Generate tokens
 	accessToken, err := h.jwtManager.GenerateToken(user.ID, user.Email, user.Role)
 	if err != nil {
