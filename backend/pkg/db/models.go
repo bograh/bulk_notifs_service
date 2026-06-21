@@ -51,18 +51,20 @@ type User struct {
 
 // ContactList model
 type ContactList struct {
-	ID          uint           `gorm:"primaryKey" json:"id"`
-	UserID      uint           `gorm:"not null;index" json:"user_id"`
-	Name        string         `gorm:"not null" json:"name"`
-	Description string         `json:"description"`
-	TotalCount  int            `gorm:"default:0" json:"total_count"`
-	ActiveCount int            `gorm:"default:0" json:"active_count"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
-	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+	ID             uint           `gorm:"primaryKey" json:"id"`
+	UserID         uint           `gorm:"not null;index" json:"user_id"`
+	OrganizationID *uint          `gorm:"index" json:"organization_id"`
+	Name           string         `gorm:"not null" json:"name"`
+	Description    string         `json:"description"`
+	TotalCount     int            `gorm:"default:0" json:"total_count"`
+	ActiveCount    int            `gorm:"default:0" json:"active_count"`
+	CreatedAt      time.Time      `json:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at"`
+	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
 	
-	User        User           `gorm:"foreignKey:UserID" json:"-"`
-	Contacts    []Contact      `gorm:"foreignKey:ContactListID" json:"contacts,omitempty"`
+	User           User           `gorm:"foreignKey:UserID" json:"-"`
+	Organization   *Organization  `gorm:"foreignKey:OrganizationID" json:"organization,omitempty"`
+	Contacts       []Contact      `gorm:"foreignKey:ContactListID" json:"contacts,omitempty"`
 }
 
 // Contact model
@@ -81,6 +83,7 @@ type Contact struct {
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
 	
 	ContactList   ContactList    `gorm:"foreignKey:ContactListID" json:"-"`
+	Tags          []ContactTag   `gorm:"foreignKey:ContactID" json:"tags,omitempty"`
 }
 
 // Campaign model
@@ -181,6 +184,7 @@ type Subscription struct {
 type Transaction struct {
 	ID              uint           `gorm:"primaryKey" json:"id"`
 	UserID          uint           `gorm:"not null;index" json:"user_id"`
+	OrganizationID  *uint          `gorm:"index" json:"organization_id"`
 	Amount          float64        `gorm:"not null" json:"amount"`
 	Currency        string         `gorm:"default:'USD'" json:"currency"`
 	Status          string         `gorm:"default:'pending'" json:"status"` // pending, completed, failed, refunded
@@ -193,4 +197,46 @@ type Transaction struct {
 	UpdatedAt       time.Time      `json:"updated_at"`
 	
 	User            User           `gorm:"foreignKey:UserID" json:"-"`
+	Organization    *Organization  `gorm:"foreignKey:OrganizationID" json:"organization,omitempty"`
+}
+
+// Organization model (multi-tenant)
+type Organization struct {
+	ID          uint           `gorm:"primaryKey" json:"id"`
+	Name        string         `gorm:"not null" json:"name"`
+	Slug        string         `gorm:"unique;not null" json:"slug"`
+	OwnerID     uint           `gorm:"not null;index" json:"owner_id"`
+	Plan        string         `gorm:"default:'free'" json:"plan"`
+	Settings    JSONB          `gorm:"type:jsonb" json:"settings"`
+	CreatedAt   time.Time      `json:"created_at"`
+	UpdatedAt   time.Time      `json:"updated_at"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+	
+	Owner       User              `gorm:"foreignKey:OwnerID" json:"-"`
+	Members     []OrganizationMember `gorm:"foreignKey:OrganizationID" json:"members,omitempty"`
+}
+
+// OrganizationMember model
+type OrganizationMember struct {
+	ID             uint      `gorm:"primaryKey" json:"id"`
+	OrganizationID uint      `gorm:"not null;index;uniqueIndex:idx_org_user" json:"organization_id"`
+	UserID         uint      `gorm:"not null;index;uniqueIndex:idx_org_user" json:"user_id"`
+	Role           string    `gorm:"default:'member'" json:"role"` // owner, admin, member, viewer
+	InvitedEmail   string    `json:"invited_email"`
+	AcceptedAt     *time.Time `json:"accepted_at"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+	
+	Organization   Organization `gorm:"foreignKey:OrganizationID" json:"-"`
+	User           User         `gorm:"foreignKey:UserID" json:"user,omitempty"`
+}
+
+// ContactTag model
+type ContactTag struct {
+	ID        uint      `gorm:"primaryKey" json:"id"`
+	ContactID uint      `gorm:"not null;index;uniqueIndex:idx_contact_tag" json:"contact_id"`
+	Tag       string    `gorm:"not null;index;uniqueIndex:idx_contact_tag" json:"tag"`
+	CreatedAt time.Time `json:"created_at"`
+	
+	Contact   Contact   `gorm:"foreignKey:ContactID" json:"-"`
 }
